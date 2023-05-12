@@ -9,5 +9,5 @@ GCommBench is a library of comprehensive applications for benchmarking GPU-GPU c
 # Contact
 If you need help modifying the library to match your specific use-case or for other issues and bug reports please open an issue or reach out at: mhaseeb@lbl.gov
 
-# Credits
+# Contributors
 Muhammad Haseeb <a href="https://github.com/mhaseeb123"><img alt="Twitter" src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" height=15>
