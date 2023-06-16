@@ -1,8 +1,0 @@
-
-#pragma once
-
-// minimum communication message length
-#cmakedefine MIN_MSG_LEN          @MIN_MSG_LEN@
-
-// maximum communication message length
-#cmakedefine MAX_MSG_LEN          @MAX_MSG_LEN@

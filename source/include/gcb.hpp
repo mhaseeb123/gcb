@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "config.hpp"
 #include "base/constants.hpp"
 #include "base/commons.hpp"
 #include "base/settings.hpp"

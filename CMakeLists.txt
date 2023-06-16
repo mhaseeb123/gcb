@@ -38,15 +38,15 @@ endif()
 ##########################################################################################
 #       CMake settings
 ##########################################################################################
-option(GCB_BENCH_NCCL "Enable NCCL benchmarking" OFF)
-option(GCB_BENCH_NVSHMEM "Enable NVSHMEM benchmarking" OFF)
+option(USE_NCCL "Enable NCCL usage" OFF)
+option(USE_NVSHMEM "Enable NVSHMEM usage" OFF)
 option(USE_TIMEMORY "Enable Timemory instrumentation" OFF)
 option(USE_MPIP_LIBRARY "Enable MPIP instrumentation via Timemory" OFF)
 
 ##########################################################################################
 #       GCC version check
 ##########################################################################################
-set(GCC_EXPECTED_VERSION 10.0)
+set(GCC_EXPECTED_VERSION 11.7)
 
 if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS GCC_EXPECTED_VERSION)
     message(FATAL_ERROR "GCC: GCB requires GCC v${GCC_EXPECTED_VERSION} or higher to build but found v${CMAKE_CXX_COMPILER_VERSION}")
@@ -58,7 +58,7 @@ endif()
 set(CXX_STANDARD_REQUIRED ON)
 
 # required minimum CXX standard
-set(CMAKE_CXX_STANDARD_REQUIRED 17)
+set(CMAKE_CXX_STANDARD_REQUIRED 20)
 
 if(NOT CXX_STANDARD OR (CXX_STANDARD LESS ${CMAKE_CXX_STANDARD_REQUIRED}))
     set(CXX_STANDARD ${CMAKE_CXX_STANDARD_REQUIRED})
@@ -68,22 +68,22 @@ endif()
 ##########################################################################################
 #       NCCL and NVSHMEM
 ##########################################################################################
-if (GCB_BENCH_NCCL)
+if (USE_NCCL)
     find_package(NCCL REQUIRED)
 endif()
 
-if(NCCL_FOUND AND GCB_BENCH_NCCL)
+if(NCCL_FOUND AND USE_NCCL)
     list(APPEND _NCCL NCCL::NCCL_CXX)
     include_directories(SYSTEM ${NCCL_INCLUDE_PATH})
     target_compile_definitions(NCCL::NCCL_CXX INTERFACE)
     set(TMP ${TMP} nccl)
 endif()
 
-if (GCB_BENCH_NVSHMEM)
+if (USE_NVSHMEM)
     find_package(NVSHMEM REQUIRED)
 endif()
 
-if(NVSHMEM_FOUND AND GCB_BENCH_NVSHMEM)
+if(NVSHMEM_FOUND AND USE_NVSHMEM)
     list(APPEND _NVSHMEM NVSHMEM::NVSHMEM_CXX)
     include_directories(SYSTEM ${NVSHMEM_INCLUDE_PATH})
     target_compile_definitions(NVSHMEM::NVSHMEM_CXX INTERFACE)
@@ -115,8 +115,8 @@ else()
 endif()
 
 # safety check for MPIP library
-if (USE_MPIP_LIBRARY AND NOT (USE_TIMEMORY AND GCB_BENCH_MPI))
-    message(WARNING "MPIP instrumentation disabled. USE_MPIP_LIBRARY=ON requires USE_TIMEMORY=ON and GCB_BENCH_MPI=ON")
+if (USE_MPIP_LIBRARY AND NOT (USE_TIMEMORY AND GCB_USE_MPI))
+    message(WARNING "MPIP instrumentation disabled. USE_MPIP_LIBRARY=ON requires USE_TIMEMORY=ON and USE_MPI=ON")
     set(USE_MPIP_LIBRARY OFF CACHE BOOL "Disabling MPIP instrumentation." FORCE)
 endif()
 
@@ -160,6 +160,8 @@ if(NOT DEFINED CMAKE_CUDA_HOST_COMPILER)
         # set the CMAKE_CUDA_HOST_COMPILER and cache it for future use
         set(CMAKE_CUDA_HOST_COMPILER CACHE STRING ${CUDA_HOST_COMPILER})
         message(STATUS "Setting CMAKE_CUDA_HOST_COMPILER=${CMAKE_CUDA_HOST_COMPILER}")
+    else()
+        message(FATAL_ERROR "CMAKE_CUDA_HOST_COMPILER not found. Please set it manually to CC or provide via CMAKE_CUDA_HOST_COMPILER")
     endif()
 
 endif()
@@ -167,13 +169,13 @@ endif()
 ##########################################################################################
 #       Configure Header files
 ##########################################################################################
-#message(STATUS "Configuring...")
+message(STATUS "Configuring...")
 
-# configure the file: constants.hpp
-#configure_file(${PROJECT_SOURCE_DIR}/cmake/Templates/constants.hpp.in constants.hpp @ONLY)
+# configure the file: config.hpp
+configure_file(${PROJECT_SOURCE_DIR}/cmake/Templates/config.hpp.in config.hpp @ONLY)
 
 # install the configured file as well
-#install(FILES ${CMAKE_BINARY_DIR}/aliases.hpp ${CMAKE_BINARY_DIR}/constants.hpp DESTINATION include)
+install(FILES ${CMAKE_BINARY_DIR}/aliases.hpp ${CMAKE_BINARY_DIR}/config.hpp DESTINATION include)
 
 
 ##########################################################################################
