@@ -24,30 +24,35 @@
  * SOFTWARE.
  */
 
-/* Helper functions and algorithms */
+/* constants and preprocessors used throughout the repo */
 
 #pragma once
 
-// #include "cuda/driver.hpp"
+// size preprocessors
 
-namespace gcb
-{
-namespace alg
-{
+// kbytes
+#define KBYTES(x)                          (1024 * (x))
 
-template<typename T, std::enable_if<std::is_arithmetic<T>::value, T>::type>
-void generate_random_data(T *&data, size_t size, int range = std::numeric_limits<T>::max())
-{
-    // range cannot be larger than the numeric limit of T
-    range = std::min(range, std::numeric_limits<T>::max());
+// mbytes
+#define MBYTES(x)                          (1024 * KBYTES(x))
 
-    // check for underflow as well
-    range = std::max(range, std::numeric_limits<T>::min());
+// gbytes
+#define GBYTES(x)                          (1024 * MBYTES(x))
 
-    // generate random data
-    for (int i = 0; i < size; i++)
-        data[i] = rand() % range;
-}
+// OpenMPI's GPUDirectRDMA max message size is 30,000 bytes
+constexpr size_t OMPI_MAX_GDR_MSG_SIZE     = 30e3;
 
-}
-}
+// max CUDA streams
+constexpr int MAX_STREAMS                  = 4;
+
+// max CUDA kernel events + h2d & d2h events in driver
+constexpr int MAX_EVENTS                   = 2;
+
+// max iterations
+constexpr size_t MAX_ITERS                 = 1000;
+
+// status success
+constexpr int SUCCESS                      = 0;
+
+// status failure (if needed)
+constexpr int FAILURE                      = -1;

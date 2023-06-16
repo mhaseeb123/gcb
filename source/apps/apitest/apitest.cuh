@@ -24,32 +24,7 @@
  * SOFTWARE.
  */
 
-/* MPI API warmup */
-#include "mpi.h"
-#include "apitest.cuh"
+#pragma once
 
-// control if MPI is aware of CUDA
-const bool AWARE = true;
-
-void vecAdd_wrap(double *a, double *b, double *c, int n);
-
-int main(int argc, char* argv[])
-{
-    status_t status = 0;
-
-    int rank = 0;
-    int size = 0;
-
-    // initialize MPI
-    status = MPI_Init(&argc, &argv);
-    status = MPI_Comm_size(MPI_COMM_WORLD, &size);
-    status = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-    //status = test_p2p(rank, size);
-    gcb::alg::at::test_vecAdd<double>(rank, size, AWARE);
-
-    status = MPI_Barrier(MPI_COMM_WORLD);
-    status = MPI_Finalize();
-
-    return status;
-}
+#include "gcb.hpp"
+#include "commlibs/mpi/driver.hpp"

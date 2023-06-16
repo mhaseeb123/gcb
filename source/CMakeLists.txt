@@ -3,5 +3,5 @@
 #   gcb benchmarks
 #----------------------------------------------------------------------------------------#
 
-message(STATUS "Adding benchmarks...")
-add_subdirectory(benchmarks)
+message(STATUS "Adding apps...")
+add_subdirectory(apps)

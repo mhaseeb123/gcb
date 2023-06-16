@@ -24,29 +24,38 @@
  * SOFTWARE.
  */
 
-/* constants and preprocessors used throughout the repo */
+/* common stdlib includes */
 
 #pragma once
 
-// size preprocessors
+#include <iostream>
+#include <numeric>
+#include <vector>
+#include <algorithm>
+#include <limits>
+#include <memory>
+#include <string>
+#include <thread>
+#include <semaphore.h>
+#include <chrono>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <random>
+#include <functional>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <tuple>
+#include <queue>
+#include <stack>
+#include <memory>
+#include <math.h>
 
-// kbytes
-#define KBYTES(x)                          (1024 * (x))
+// type aliases
+using status_t = int;
+using string_t = std::string;
 
-// mbytes
-#define MBYTES(x)                          (1024 * KBYTES(x))
-
-// gbytes
-#define GBYTES(x)                          (1024 * MBYTES(x))
-
-// OpenMPI's GPUDirectRDMA max message size is 30,000 bytes
-constexpr size_t OMPI_MAX_GDR_MSG_SIZE     = 30e3;
-
-// max CUDA streams
-constexpr int MAX_STREAMS                  = 4;
-
-// max CUDA kernel events + h2d & d2h events in driver
-constexpr int MAX_EVENTS                   = 2;
-
-// max iterations
-constexpr size_t MAX_ITERS                 = 1000;
+// utility macros
+#define unused(x)                            (void)(x)

@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "commons.hpp"
+#include "gcb.hpp"
 #include "cuda.h"
 #include "device_launch_parameters.h"
 #include "cuda_runtime.h"

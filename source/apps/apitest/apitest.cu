@@ -24,20 +24,26 @@
  * SOFTWARE.
  */
 
-/* driver parent class */
+/* API warmup */
+#include "apitest.cuh"
 
-#pragma once
-
-#include "commons.hpp"
-
-namespace gcb
+status_t main(int argc, char* argv[])
 {
+    status_t status = SUCCESS;
 
-// parent driver class
-template <typename T>
-class driver
-{
+    // run apitest using mpi
+    status = gcb::comm::mpi::apitest();
 
-};
+    // TODO: NCCL and NVSHMEM drivers to be implemented
+#if 0
+    // run apitest using nccl
+    if (!status)
+        status = gcb::comm::nccl::apitest();
 
-}; // namespace gcb
+    // run apitest using nvshmem
+    if (!status)
+        status = gcb::comm::nvshmem::apitest();
+#endif
+
+    return status;
+}
