@@ -23,7 +23,7 @@ public:
     {
         _rank = -1;
         _size = 1;
-        _comm = MPI_COMM_WORLD;
+        _comm = _active = MPI_COMM_WORLD;
         _aware = true;
     };
 
@@ -31,7 +31,7 @@ public:
     {
         _rank = -1;
         _size = 1;
-        _comm = comm;
+        _comm = _active = comm;
         _aware = aware;
 
         this->init(argc, argv, reqd);
@@ -54,8 +54,8 @@ public:
                 std::cout << "FATAL: MPI_Init_thread() did not provide the requested thread support" << std::endl;
                 return  FAILURE;
             }
-            MPI_Comm_rank(_comm, &_rank);
-            MPI_Comm_size(_comm, &_size);
+            MPI_Comm_rank(_active, &_rank);
+            MPI_Comm_size(_active, &_size);
 
             return SUCCESS;
         }();
@@ -70,25 +70,37 @@ public:
         return static_cast<status_t>(MPI_Finalize());
     }
 
-    auto barrier() { return MPI_Barrier(this->_comm); }
+    auto barrier() { return MPI_Barrier(this->_active); }
+    auto worldbarrier() { return MPI_Barrier(this->_comm); }
 
-    auto rank() { return _rank; }
+    auto &rank() { return _rank; }
 
-    auto size() { return _size; }
+    auto &size() { return _size; }
+
+    auto get_Comm_rank(MPI_Comm comm, int *rank)
+    {
+        return MPI_Comm_rank(comm, rank);
+    }
+
+    auto get_Comm_size(MPI_Comm comm, int *size)
+    {
+        return MPI_Comm_size(comm, size);
+    }
 
     MPI_Comm& comm() { return _comm; }
+    MPI_Comm& active_comm() { return _active; }
 
     template <typename T>
     auto Send(const T *data, size_t size, MPI_Datatype type, int dst, int tag)
     {
-        return MPI_Send(static_cast<const void *>(data), size, type, dst, tag, this->_comm);
+        return MPI_Send(static_cast<const void *>(data), size, type, dst, tag, this->_active);
     }
 
     template <typename T>
     auto Recv(T *data, size_t size, MPI_Datatype type, int src, int tag)
     {
         MPI_Status status;
-        MPI_Recv(static_cast<void *>(data), size, type, src, tag, this->_comm, &status);
+        MPI_Recv(static_cast<void *>(data), size, type, src, tag, this->_active, &status);
         return status;
     }
 
@@ -96,7 +108,7 @@ public:
     MPI_Request ISend(const T *data, size_t size, MPI_Datatype type, int dst, int tag)
     {
         MPI_Request request;
-        MPI_Isend(static_cast<const void *>(data), size, type, dst, tag, this->_comm, &request);
+        MPI_Isend(static_cast<const void *>(data), size, type, dst, tag, this->_active, &request);
         return request;
     }
 
@@ -104,44 +116,44 @@ public:
     MPI_Request IRecv(T *data, size_t size, MPI_Datatype type, int src, int tag)
     {
         MPI_Request request;
-        MPI_Irecv(static_cast<void *>(data), size, type, src, tag, this->_comm, &request);
+        MPI_Irecv(static_cast<void *>(data), size, type, src, tag, this->_active, &request);
         return request;
     }
 
     template <typename T>
     auto Bcast(T *data, size_t size, MPI_Datatype type, int root)
     {
-        return MPI_Bcast(static_cast<void *>(data), size, type, root, this->_comm);
+        return MPI_Bcast(static_cast<void *>(data), size, type, root, this->_active);
     }
 
     template <typename T, typename U>
-    auto Scatter(T *data, size_t ssize, MPI_Datatype stype, U *rdata, MPI_Datatype rtype, size_t rsize, int root)
+    auto Scatter(T *data, size_t ssize, MPI_Datatype stype, U *rdata, size_t rsize, MPI_Datatype rtype, int root)
     {
-        return MPI_Scatter(data, ssize, stype, rdata, rsize, rtype, root, this->_comm);
+        return MPI_Scatter(data, ssize, stype, rdata, rsize, rtype, root, this->_active);
     }
 
     template <typename T, typename U>
-    auto Gather(T *data, size_t ssize, MPI_Datatype stype, U *rdata, MPI_Datatype rtype, size_t rsize, int root)
+    auto Gather(T *data, size_t ssize, MPI_Datatype stype, U *rdata, size_t rsize, MPI_Datatype rtype, int root)
     {
-        return MPI_Gather(data, ssize, stype, rdata, rsize, rtype, root, this->_comm);
+        return MPI_Gather(data, ssize, stype, rdata, rsize, rtype, root, this->_active);
     }
 
     template <typename T, typename U>
-    auto AllGather(T *data, size_t ssize, MPI_Datatype stype, U *rdata, MPI_Datatype rtype, size_t rsize)
+    auto AllGather(T *data, size_t ssize, MPI_Datatype stype, U *rdata, size_t rsize, MPI_Datatype rtype)
     {
-        return MPI_Allgather(data, ssize, stype, rdata, rsize, rtype, this->_comm);
+        return MPI_Allgather(data, ssize, stype, rdata, rsize, rtype, this->_active);
     }
 
     template <typename T>
     auto Allreduce(T *sbuff, T *rbuff, size_t size, MPI_Datatype type, MPI_Op op)
     {
-        return MPI_Allreduce(sbuff, rbuff, size, type, op, this->_comm);
+        return MPI_Allreduce(sbuff, rbuff, size, type, op, this->_active);
     }
 
     template <typename T>
     auto Reduce(T *sbuff, T *rbuff, size_t size, MPI_Datatype type, int root, MPI_Op op)
     {
-        return Reduce(sbuff, rbuff, size, type, op, root, this->_comm);
+        return Reduce(sbuff, rbuff, size, type, op, root, this->_active);
     }
 
     // get_instance
@@ -158,6 +170,7 @@ private:
     int _size;
     bool _aware;
     MPI_Comm _comm;
+    MPI_Comm _active;
 };
 
     status_t apitest()
@@ -173,9 +186,12 @@ private:
         // get rank and size
         int rank = driver->rank();
         int size = driver->size();
-
         int rankminus1 = (rank-1) < 0 ? size-1 : rank-1;
         int rankplus1 = (rank+1) % size;
+
+        // get a CUDA driver instance
+        // FIXME: Rough hack to set GPU ID = rank%4 as PM GPU nodes have 4 GPUs each
+        auto *cuda_drv = gcb::cuda::driver::get_instance(rank%4);
 
         // check if we have at least 2 ranks
         if (size < 2)
@@ -196,14 +212,28 @@ private:
 
         // test message
         string_t msg = "testing...";
-        const char *smessage = msg.c_str();
-        char rmessage[256];
+        const char *h_smessage = msg.c_str();
+        char h_rmessage[256];
+
+        // allocate device memory
+        char *smessage = nullptr;
+        char *rmessage = nullptr;
+
+        char *smsg_data =msg.data();
+
+        gcb::cuda::error_check(gcb::cuda::device_allocate_async(smessage, msg.size(), cuda_drv->get_stream()));
+        gcb::cuda::error_check(gcb::cuda::device_allocate_async(rmessage, 256, cuda_drv->get_stream()));
+
+        gcb::cuda::error_check(gcb::cuda::H2D(smessage, smsg_data, msg.size(), cuda_drv->get_stream()));
 
         // validate function for string
         auto validate = [&]()
         {
+            static char *rmsg_data = &h_rmessage[0];
             driver->barrier();
-            return strncmp(smessage, rmessage, msg.size());
+            gcb::cuda::error_check(gcb::cuda::D2H(rmsg_data, rmessage, msg.size(), cuda_drv->get_stream()));
+            cuda_drv->stream_sync();
+            return strncmp(msg.data(), h_rmessage, msg.size());
         };
 
         // testing message printer
@@ -237,6 +267,7 @@ private:
         // validate
         status = validate();
 
+        // test async P2P communication
         if (!status)
         {
             auto &&sreq = driver->ISend(smessage, msg.size(), MPI_CHAR, rankplus1, 0);
@@ -276,7 +307,7 @@ private:
             int sum = -1;
 
             // allreduce
-            MPI_Allreduce(&rank, &sum, 1, MPI_INT, MPI_SUM, driver->comm());
+            driver->Allreduce(&rank, &sum, 1, MPI_INT, MPI_SUM);
             status = !(sum == (size*(size-1))/2);
         }
 
@@ -310,7 +341,7 @@ private:
             std::iota(v.begin(), v.end(), 0);
 
             std::vector<int> recv(size, -1);
-            MPI_Allgather(&rank, 1, MPI_INT, recv.data(), 1, MPI_INT, driver->comm());
+            driver->AllGather(&rank, 1, MPI_INT, recv.data(), 1, MPI_INT);
 
             driver->barrier();
 
@@ -332,7 +363,7 @@ private:
             // one sided
             int win_buf = rank;
             MPI_Win window;
-            MPI_Win_create(&win_buf, sizeof(int), sizeof(int), MPI_INFO_NULL, driver->comm(), &window);
+            MPI_Win_create(&win_buf, sizeof(int), sizeof(int), MPI_INFO_NULL, driver->active_comm(), &window);
 
             MPI_Win_fence(0, window);
 

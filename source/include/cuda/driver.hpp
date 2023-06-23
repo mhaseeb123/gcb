@@ -73,6 +73,11 @@ struct gpu_manager
         return gpu_id;
     }
 
+    int get_ngpus()
+    {
+        return _ngpus;
+    }
+
     void set_gpu_id(int id = 0)
     {
         int gpu_id = (id > 0 && id < _ngpus) ? id : 0;
@@ -101,6 +106,28 @@ public:
 
     // ------------------------------------------------------------------------------------ //
 
+    driver(int _gpu_id)
+    {
+        auto manager = gpu_manager::get_instance();
+
+        int gpu_id = manager.get_gpu_id();
+
+        if (_gpu_id > 0 && _gpu_id < manager.get_ngpus())
+            gpu_id = _gpu_id;
+
+        error_check(cudaSetDevice(gpu_id));
+        std::cout << "DRIVER: Setting Device to: " << gpu_id << std::endl;
+
+        for (int i = 0; i < MAX_STREAMS; i++)
+            error_check(cudaStreamCreateWithFlags(&stream[i], cudaStreamNonBlocking));
+
+        error_check(cudaEventCreateWithFlags(&d2h, cudaEventBlockingSync));
+
+        for (int i = 0; i < MAX_EVENTS; i++)
+            error_check(cudaEventCreateWithFlags(&events[i], cudaEventBlockingSync));
+    }
+
+    // ------------------------------------------------------------------------------------ //
     driver()
     {
         auto manager = gpu_manager::get_instance();
@@ -177,9 +204,9 @@ public:
 
     // We can have multiple concurrent resident kernels
     // per device depending on device compute capability
-    static driver* get_instance()
+    static driver* get_instance(int _gpu_id = 0)
     {
-        static driver instance;
+        static driver instance(_gpu_id);
         return &instance;
     }
 };
