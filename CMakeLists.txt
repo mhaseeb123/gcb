@@ -46,7 +46,7 @@ option(USE_MPIP_LIBRARY "Enable MPIP instrumentation via Timemory" OFF)
 ##########################################################################################
 #       GCC version check
 ##########################################################################################
-set(GCC_EXPECTED_VERSION 11.7)
+set(GCC_EXPECTED_VERSION 11.2)
 
 if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS GCC_EXPECTED_VERSION)
     message(FATAL_ERROR "GCC: GCB requires GCC v${GCC_EXPECTED_VERSION} or higher to build but found v${CMAKE_CXX_COMPILER_VERSION}")
@@ -115,7 +115,7 @@ else()
 endif()
 
 # safety check for MPIP library
-if (USE_MPIP_LIBRARY AND NOT (USE_TIMEMORY AND GCB_USE_MPI))
+if (USE_MPIP_LIBRARY AND NOT USE_TIMEMORY)
     message(WARNING "MPIP instrumentation disabled. USE_MPIP_LIBRARY=ON requires USE_TIMEMORY=ON and USE_MPI=ON")
     set(USE_MPIP_LIBRARY OFF CACHE BOOL "Disabling MPIP instrumentation." FORCE)
 endif()
@@ -145,7 +145,7 @@ endif()
 ##########################################################################################
 
 if(NOT DEFINED CMAKE_CUDA_HOST_COMPILER)
-    message(WARNING "CMAKE_CUDA_HOST_COMPILER not provided\n=> Setting CMAKE_CUDA_HOST_COMPILER=$(which CC)")
+    message(STATUS "CMAKE_CUDA_HOST_COMPILER not provided\n=> Setting CMAKE_CUDA_HOST_COMPILER=$(which CC)")
 
     # run which CC to find the CUDA_HOST_COMPILER
     execute_process(
@@ -158,7 +158,7 @@ if(NOT DEFINED CMAKE_CUDA_HOST_COMPILER)
     # check for empty string
     if (NOT CUDA_HOST_COMPILER STREQUAL "")
         # set the CMAKE_CUDA_HOST_COMPILER and cache it for future use
-        set(CMAKE_CUDA_HOST_COMPILER CACHE STRING ${CUDA_HOST_COMPILER})
+        set(CMAKE_CUDA_HOST_COMPILER ${CUDA_HOST_COMPILER} CACHE STRING "CUDA_HOST_COMPILER" FORCE)
         message(STATUS "Setting CMAKE_CUDA_HOST_COMPILER=${CMAKE_CUDA_HOST_COMPILER}")
     else()
         message(FATAL_ERROR "CMAKE_CUDA_HOST_COMPILER not found. Please set it manually to CC or provide via CMAKE_CUDA_HOST_COMPILER")
