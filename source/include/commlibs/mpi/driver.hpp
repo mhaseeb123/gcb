@@ -219,7 +219,7 @@ private:
         char *smessage = nullptr;
         char *rmessage = nullptr;
 
-        char *smsg_data =msg.data();
+        char *smsg_data = (char *)msg.data();
 
         gcb::cuda::error_check(gcb::cuda::device_allocate_async(smessage, msg.size(), cuda_drv->get_stream()));
         gcb::cuda::error_check(gcb::cuda::device_allocate_async(rmessage, 256, cuda_drv->get_stream()));
@@ -288,7 +288,7 @@ private:
         if (!status)
         {
             if (!rank)
-                driver->Bcast(msg.data(), msg.size(), MPI_CHAR, 0);
+                driver->Bcast(smsg_data, msg.size(), MPI_CHAR, 0);
             else
                 driver->Bcast(&rmessage[0], msg.size(), MPI_CHAR, 0);
         }
