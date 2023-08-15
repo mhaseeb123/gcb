@@ -1,9 +1,9 @@
-project(flood-send-put-num LANGUAGES CXX)
+project(flood-send-put-num LANGUAGES CUDA)
 
 add_executable(flood-send-put-num ${_EXCLUDE}
-    ${CMAKE_CURRENT_LIST_DIR}/flood_send_put_num.c)
+    ${CMAKE_CURRENT_LIST_DIR}/flood_send_put_num.cpp)
 
-set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/flood_send_put_num.c PROPERTIES LANGUAGE CXX)
+set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/flood_send_put_num.cpp PROPERTIES LANGUAGE CUDA LINKER_LANGUAGE CUDA)
 
 # add dependencies (not applicable yet)
 # add_dependencies(flood-send-put-num magic_enum argparse)
