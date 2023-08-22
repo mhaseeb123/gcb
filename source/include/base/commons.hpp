@@ -40,6 +40,7 @@
 #include <chrono>
 #include <fstream>
 #include <sstream>
+#include <cstring>
 #include <iomanip>
 #include <random>
 #include <functional>

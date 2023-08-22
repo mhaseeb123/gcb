@@ -156,6 +156,11 @@ public:
         return Reduce(sbuff, rbuff, size, type, op, root, this->_active);
     }
 
+    double Wtime()
+    {
+        return MPI_Wtime();
+    }
+
     // get_instance
     static driver *get_instance()
     {
@@ -221,10 +226,13 @@ private:
 
         char *smsg_data = (char *)msg.data();
 
-        gcb::cuda::error_check(gcb::cuda::device_allocate_async(smessage, msg.size(), cuda_drv->get_stream()));
-        gcb::cuda::error_check(gcb::cuda::device_allocate_async(rmessage, 256, cuda_drv->get_stream()));
+        // buffers being used in GPUDirect RDMA should not be allocated asynchronously
+        gcb::cuda::error_check(gcb::cuda::device_allocate(smessage, msg.size()));
+        gcb::cuda::error_check(gcb::cuda::device_allocate(rmessage, 256));
 
         gcb::cuda::error_check(gcb::cuda::H2D(smessage, smsg_data, msg.size(), cuda_drv->get_stream()));
+
+        cuda_drv->stream_sync();
 
         // validate function for string
         auto validate = [&]()
@@ -251,7 +259,7 @@ private:
         };
 
         // test a simple P2P ring exchange
-        test_message("P2P");
+        test_message("P2P Async");
 
         if (rank == 0)
         {
@@ -266,6 +274,9 @@ private:
 
         // validate
         status = validate();
+        status_message("P2P Async", status);
+
+        test_message("P2P");
 
         // test async P2P communication
         if (!status)
