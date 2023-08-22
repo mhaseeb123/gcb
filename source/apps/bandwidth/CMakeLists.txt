@@ -13,7 +13,7 @@ set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/bandwidth.cpp PROPERTIES L
 target_include_directories(bandwidth PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../include ${CMAKE_BINARY_DIR}
                             ${ARGPARSE_INCLUDE_DIR})
 
-target_link_libraries(bandwidth PUBLIC ${MPI_LIBS})
+target_link_libraries(bandwidth PUBLIC ${MPI_LIBS} cudart)
 
 set_target_properties(bandwidth
     PROPERTIES
@@ -25,8 +25,6 @@ set_target_properties(bandwidth
         CXX_EXTENSIONS NO
         INSTALL_RPATH_USE_LINK_PATH ON
 )
-
-
 
 # installation
 install(TARGETS apitest DESTINATION ${CMAKE_INSTALL_BINDIR})

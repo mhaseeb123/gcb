@@ -27,5 +27,7 @@
 #pragma once
 
 #include "gcb.hpp"
+#include <execution>
+#include <algorithm>
 #include "commlibs/mpi/driver.hpp"
 #include "cuda/driver.hpp"

@@ -66,21 +66,17 @@ status_t main(int argc, char* argv[])
         long int N = 1 << i;
 
         // Allocate memory for A on CPU
-        static double *A = new double[1 << 27];
+        double *A = nullptr;
+
+        gcb::cuda::error_check(gcb::cuda::host_pinned_allocate(A, N));
 
         // Initialize all elements of A to random values
-        if (i == 0)
-        {
-            for(int j=0; j<N; j++)
-                A[j] = (double)rand()/(double)RAND_MAX;
-        }
+        std::for_each_n(A, N, [](auto& itr){ itr = (double)rand()/(double)RAND_MAX; });
 
-        static double *d_A = nullptr;
+        double *d_A = nullptr;
 
-        if (d_A == nullptr)
-        {
-            gcb::cuda::error_check(gcb::cuda::device_allocate(d_A, 1 << 27));
-        }
+        gcb::cuda::error_check(gcb::cuda::device_allocate(d_A, N));
+
 
         gcb::cuda::error_check(gcb::cuda::H2D(d_A, A, N, cuda_drv->get_stream()));
 
@@ -128,11 +124,8 @@ status_t main(int argc, char* argv[])
 
         if(rank == 0) printf("Transfer size (B): %10li, Transfer Time (s): %15.9f, Bandwidth (GB/s): %15.9f\n", num_B, avg_time_per_transfer, num_GB/avg_time_per_transfer );
 
-        if (i == 27)
-        {
-            gcb::cuda::error_check(gcb::cuda::device_free(d_A));
-            delete[] A;
-        }
+        gcb::cuda::error_check(gcb::cuda::device_free(d_A));
+        gcb::cuda::error_check(gcb::cuda::host_pinned_free(A));
     }
 
     mpi_driver->finalize();
