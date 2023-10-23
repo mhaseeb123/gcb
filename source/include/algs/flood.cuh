@@ -6,20 +6,6 @@ namespace gcb
 namespace algs
 {
 
-template <typename T>
-status_t flood_cyclic(T *data, settings_t &settings)
-{
-    status_t status = SUCCESS;
-    return status;
-}
-
-template <typename T>
-status_t flood_linear(T *data, settings_t &settings, int start = 0)
-{
-    status_t status = SUCCESS;
-    return status;
-}
-
 template <typename T, typename U>
 status_t flood_mesh(T *data, settings_t &settings)
 {
