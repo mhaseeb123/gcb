@@ -1,5 +1,6 @@
-#include <cuda.h>
-#include <cuda_runtime.h>
+#pragma once
+
+#include "gcb.hpp"
 #include <mpi.h>
 #include <omp.h>
 #include <sched.h>
