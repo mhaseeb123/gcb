@@ -1,9 +1,9 @@
 project(apitest LANGUAGES CXX)
 
 add_executable(apitest ${_EXCLUDE}
-    ${CMAKE_CURRENT_LIST_DIR}/apitest.cu)
+    ${CMAKE_CURRENT_LIST_DIR}/apitest.cpp)
 
-set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/apitest.cu PROPERTIES LANGUAGE CXX LINKER_LANGUAGE CXX)
+set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/apitest.cpp PROPERTIES LANGUAGE CXX LINKER_LANGUAGE CXX)
 
 # add dependencies (not applicable yet)
 # add_dependencies(apitest magic_enum argparse)
