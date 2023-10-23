@@ -1,15 +1,11 @@
-# GPU-GPU Communications & Benchmarks (GCB)
-GCB develops a suite of apps and kernels to demonstrate, study (and optimize) GPU-GPU communications using new technologies/features in MPI, NCCL, NVSHMEM, and C++.
+# CUDA-aware MPI tests
+GCB includes a suite of benchmarks and basic tests for CUDA-aware MPI and C++ compilers.
 
 # Dependencies
 
 * MPI
-* NVHPC
-* C++
-* NCCL
-* NVSHMEM
-* argparse
-* optional: magic_enum
+* C++ compiler
+* CUDA
 
 # Build
 
@@ -17,7 +13,7 @@ GCB develops a suite of apps and kernels to demonstrate, study (and optimize) GP
 
 ```bash
 # load modules
-ml PrgEnv-nvhpc ; ml nvhpc/23.1 ; ml cmake
+ml PrgEnv-[gnu/nvidia/intel/llvm] ; ml cmake
 
 # build
 mkdir build ; cd build ; cmake .. -DCMAKE_CUDA_HOST_COMPILER=$(which CC) [OTHER OPTIONS] ; make -j <JOBS>
