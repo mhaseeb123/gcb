@@ -34,16 +34,5 @@ status_t main(int argc, char* argv[])
     // run apitest using mpi
     status = gcb::comm::mpi::apitest();
 
-    // TODO: NCCL and NVSHMEM drivers to be implemented
-#if 0
-    // run apitest using nccl
-    if (!status)
-        status = gcb::comm::nccl::apitest();
-
-    // run apitest using nvshmem
-    if (!status)
-        status = gcb::comm::nvshmem::apitest();
-#endif
-
     return status;
 }

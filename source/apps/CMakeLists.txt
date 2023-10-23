@@ -17,12 +17,12 @@ add_subdirectory(bandwidth)
 #   Add MPI partial communication demo
 #----------------------------------------------------------------------------------------#
 
-message(STATUS "Adding mpi partitioned communication demo...")
-add_subdirectory(mpi-part-comm-demo)
+message(STATUS "Adding mpi cuda hello demo...")
+add_subdirectory(mpi-cuda-hello)
 
 #----------------------------------------------------------------------------------------#
 #   Add MPI Flood Send Put benchmark
 #----------------------------------------------------------------------------------------#
 
-message(STATUS "Adding mpi flood send put benchmark...")
-add_subdirectory(flood-send-put-num)
+message(STATUS "Adding neighbor comms benchmark...")
+add_subdirectory(neighbor-comms)

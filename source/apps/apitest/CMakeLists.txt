@@ -1,9 +1,9 @@
-project(apitest LANGUAGES CUDA)
+project(apitest LANGUAGES CXX)
 
 add_executable(apitest ${_EXCLUDE}
     ${CMAKE_CURRENT_LIST_DIR}/apitest.cu)
 
-set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/apitest.cu PROPERTIES LANGUAGE CUDA LINKER_LANGUAGE CXX)
+set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/apitest.cu PROPERTIES LANGUAGE CXX LINKER_LANGUAGE CXX)
 
 # add dependencies (not applicable yet)
 # add_dependencies(apitest magic_enum argparse)
@@ -17,7 +17,7 @@ target_link_libraries(apitest PUBLIC ${MPI_LIBS})
 
 set_target_properties(apitest
     PROPERTIES
-        CXX_STANDARD ${CXX_STANDARD}
+        CXX_STANDARD ${CMAKE_CXX_STANDARD}
         CUDA_ARCHITECTURES 80
         CUDA_SEPARABLE_COMPILATION ON
         CUDA_STANDARD 17

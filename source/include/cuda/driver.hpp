@@ -306,6 +306,11 @@ auto device_free_async(T *&ptr, const cudaStream_t &stream)
     return cudaFreeAsync(ptr, stream);
 }
 
+auto device_sync()
+{
+    return cudaDeviceSynchronize();
+}
+
 }; //namespace cuda
 
 }; // namespace gcb

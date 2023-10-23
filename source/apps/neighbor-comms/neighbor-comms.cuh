@@ -27,4 +27,44 @@
 #pragma once
 
 #include "gcb.hpp"
+#include <execution>
+#include <algorithm>
+#include <stdio.h>
+#include <stdlib.h>
+#include <memory>
+
 #include "commlibs/mpi/driver.hpp"
+#include "cuda/driver.hpp"
+//#include <helper_cuda.h>
+
+#define checkCudaErrors(ans)                   check_err((ans), __FILE__, __LINE__)
+
+// error checking function
+template <typename T>
+static inline void check_err(T result, const char *const file, const int line, bool is_fatal = true)
+{
+    if (result != cudaSuccess)
+    {
+        std::cerr << "CUDA error at " << file << ":" << line << std::endl;
+        std::cerr << cudaGetErrorString(result) << std::endl;
+
+        if (is_fatal)
+            exit(result);
+    }
+}
+
+struct CudaMallocDeleter {
+  void operator()(double* obj) {
+    checkCudaErrors(cudaFree(obj));
+  }
+};
+
+
+enum NeighborIndex {
+  XPLUS = 0,
+  XMINUS = 1,
+  YPLUS = 2,
+  YMINUS = 3,
+  ZPLUS = 4,
+  ZMINUS = 5
+};
