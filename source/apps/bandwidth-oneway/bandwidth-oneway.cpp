@@ -67,7 +67,11 @@ status_t main(int argc, char* argv[])
         Experimental Setup
     --------------------------------------------------------------------------------------------*/
     // bytes calculations
+
+    // 1GB in bytes
     constexpr long int B_in_GB = 1 << 30;
+
+    // niterations = log2(1GB) - log2(sizeof(double))
     constexpr long int niters = static_cast<int>(log2(B_in_GB)) - static_cast<int>(log2(sizeof(double)));
 
     // create host and device arrays
@@ -81,12 +85,13 @@ status_t main(int argc, char* argv[])
     // generate random vector in h_Arr
     gcb::bw_oway::genRandomVector<double>(h_Arr, B_in_GB, 0.0, 1e7);
 
-    if (!rank)
-        std::cout << "\n\nRunning MPI_Put bandwidth test:\n\n" << std::flush;
-
     /* -------------------------------------------------------------------------------------------
         MPI_Put: Loop from 8B to 1GB
     --------------------------------------------------------------------------------------------*/
+    // print status
+    if (!rank)
+        std::cout << "\n\nRunning MPI_Put bandwidth test:\n\n" << std::flush;
+
     for(int i=0; i<=niters; i++)
     {
         long int N = 1 << i;
@@ -112,7 +117,7 @@ status_t main(int argc, char* argv[])
             MPI_Win_fence(0, window);
         }
 
-        // Time ping-pong for loop_count iterations of data transfer size 8*N bytes
+        // Time MPI_Put for loop_count iterations of data transfer size sizeof(double)*N bytes
         double start_time, stop_time, elapsed_time;
         start_time = mpi_driver->Wtime();
 
@@ -138,12 +143,13 @@ status_t main(int argc, char* argv[])
         MPI_Win_free(&window);
     }
 
-    if (!rank)
-        std::cout << "\n\nRunning MPI_Get bandwidth test:\n\n" << std::flush;
-
     /* -------------------------------------------------------------------------------------------
         MPI_Get: Loop from 8B to 1GB
     --------------------------------------------------------------------------------------------*/
+    // print status
+    if (!rank)
+        std::cout << "\n\nRunning MPI_Get bandwidth test:\n\n" << std::flush;
+
     for(int i=0; i<=niters; i++)
     {
         long int N = 1 << i;
@@ -169,7 +175,7 @@ status_t main(int argc, char* argv[])
             MPI_Win_fence(0, window);
         }
 
-        // Time ping-pong for loop_count iterations of data transfer size 8*N bytes
+        // Time MPI_Get for loop_count iterations of data transfer size sizeof(double)*N bytes
         double start_time, stop_time, elapsed_time;
         start_time = mpi_driver->Wtime();
 
@@ -195,6 +201,9 @@ status_t main(int argc, char* argv[])
         MPI_Win_free(&window);
     }
 
+    /* -------------------------------------------------------------------------------------------
+        Finalize
+    --------------------------------------------------------------------------------------------*/
     // free memories
     gcb::cuda::error_check(gcb::cuda::device_free(d_Arr));
     gcb::cuda::error_check(gcb::cuda::host_pinned_free(h_Arr));
