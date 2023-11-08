@@ -7,9 +7,7 @@ GCB includes a suite of benchmarks and basic tests for CUDA-aware MPI and C++ co
 * C++ compiler
 * CUDA
 
-# Build
-
-## Perlmutter
+# Build (Perlmutter)
 
 ```bash
 # load modules

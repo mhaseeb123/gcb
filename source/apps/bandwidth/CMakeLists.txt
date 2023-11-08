@@ -23,4 +23,4 @@ set_target_properties(bandwidth
 )
 
 # installation
-install(TARGETS apitest DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS bandwidth DESTINATION ${CMAKE_INSTALL_BINDIR})

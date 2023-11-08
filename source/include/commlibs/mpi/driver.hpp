@@ -67,6 +67,11 @@ public:
     {
         _rank = -1;
         _size = 0;
+
+        // call mpi barrier to ensure everything is good
+        MPI_Barrier(this->_comm);
+
+        // call finalize
         return static_cast<status_t>(MPI_Finalize());
     }
 
