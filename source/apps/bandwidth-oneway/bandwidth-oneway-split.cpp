@@ -30,8 +30,8 @@
 
 #include "bandwidth-oneway.hpp"
 
-// number of times each transfer should run
-constexpr int loop_count = 50;
+// number of times each iteration should run
+constexpr int loop_count = 2;
 
 status_t main(int argc, char* argv[])
 {
@@ -92,7 +92,7 @@ status_t main(int argc, char* argv[])
     if (!rank)
         std::cout << "\n\nRunning MPI_Put bandwidth test:\n\n" << std::flush;
 
-    for(int i=0; i<=niters; i++)
+    for(int i=niters; i>=4; i--)
     {
         long int N = 1 << i;
 
@@ -104,7 +104,7 @@ status_t main(int argc, char* argv[])
 
         // create MPI windows for one-way communication
         MPI_Win window;
-        MPI_Win_create(d_Arr, N * sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &window);
+        MPI_Win_create(d_Arr, B_in_GB, sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &window);
 
         // make sure the windows have been created
         MPI_Win_fence(0, window);
@@ -121,6 +121,9 @@ status_t main(int argc, char* argv[])
 
         // unlock and ensure all comms completed in the epoch
         MPI_Win_unlock_all(window);
+
+        long int message_size = sizeof(double) * N;
+        long int nmessages = (B_in_GB / message_size);
 
         // Time MPI_Put for loop_count iterations of data transfer size sizeof(double)*N bytes
         double start_time, stop_time, elapsed_time;
@@ -132,8 +135,13 @@ status_t main(int argc, char* argv[])
         // actual loop
         for(int j=1; j<=loop_count; j++)
         {
-            if(!rank)
-                MPI_Put(d_Arr, N, MPI_DOUBLE, 1, 0, N, MPI_DOUBLE, window);
+            for (int k = 0 ; k < nmessages; k++)
+            {
+                if(!rank)
+                {
+                    MPI_Put(&d_Arr[k*N], N, MPI_DOUBLE, 1, k*N, N, MPI_DOUBLE, window);
+                }
+            }
         }
 
         // unlock and ensure all comms completed in the epoch
@@ -142,15 +150,17 @@ status_t main(int argc, char* argv[])
         stop_time = mpi_driver->Wtime();
         elapsed_time = stop_time - start_time;
 
-        long int num_B = sizeof(double)*N;
+        long int num_B = message_size;
         double num_GB = (double)num_B / (double)B_in_GB;
-        double avg_time_per_transfer = elapsed_time / ((double)loop_count);
+        double avg_time_per_transfer = elapsed_time / ((double)loop_count * nmessages);
 
         if(!rank)
-            printf("Transfer size (B): %10li, Transfer Time (s): %15.9f, Bandwidth (GB/s): %15.9f\n", num_B, avg_time_per_transfer, num_GB/avg_time_per_transfer );
+            printf("Message size (B): %10li, Num messages: %10i, Transfer Time (s): %15.9f, Bandwidth (GB/s): %15.9f\n", num_B, nmessages, avg_time_per_transfer, num_GB/avg_time_per_transfer );
 
         // free window
         MPI_Win_free(&window);
+
+        std::cout << std::flush;
     }
 
     /* -------------------------------------------------------------------------------------------
@@ -160,7 +170,7 @@ status_t main(int argc, char* argv[])
     if (!rank)
         std::cout << "\n\nRunning MPI_Get bandwidth test:\n\n" << std::flush;
 
-    for(int i=0; i<=niters; i++)
+    for(int i=niters; i>=4; i--)
     {
         long int N = 1 << i;
 
@@ -172,7 +182,7 @@ status_t main(int argc, char* argv[])
 
         // create MPI windows for one-way communication
         MPI_Win window;
-        MPI_Win_create(d_Arr, N * sizeof(double), sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &window);
+        MPI_Win_create(d_Arr, B_in_GB, sizeof(double), MPI_INFO_NULL, MPI_COMM_WORLD, &window);
 
         // make sure the windows have been created
         MPI_Win_fence(0, window);
@@ -190,6 +200,9 @@ status_t main(int argc, char* argv[])
         // unlock and ensure all comms completed in the epoch
         MPI_Win_unlock_all(window);
 
+        long int message_size = sizeof(double) * N;
+        int nmessages = (B_in_GB / message_size);
+
         // Time MPI_Get for loop_count iterations of data transfer size sizeof(double)*N bytes
         double start_time, stop_time, elapsed_time;
         start_time = mpi_driver->Wtime();
@@ -200,8 +213,13 @@ status_t main(int argc, char* argv[])
         // actual loop
         for(int j=1; j<=loop_count; j++)
         {
-            if(!rank)
-                MPI_Get(d_Arr, N, MPI_DOUBLE, 1, 0, N, MPI_DOUBLE, window);
+            for (int k = 0 ; k < nmessages; k++)
+            {
+                if(!rank)
+                {
+                    MPI_Get(&d_Arr[k*N], N, MPI_DOUBLE, 1, k*N, N, MPI_DOUBLE, window);
+                }
+            }
         }
 
         // unlock and ensure all comms completed in the epoch
@@ -210,15 +228,17 @@ status_t main(int argc, char* argv[])
         stop_time = mpi_driver->Wtime();
         elapsed_time = stop_time - start_time;
 
-        long int num_B = sizeof(double)*N;
+        long int num_B = message_size;
         double num_GB = (double)num_B / (double)B_in_GB;
-        double avg_time_per_transfer = elapsed_time / ((double)loop_count);
+        double avg_time_per_transfer = elapsed_time / ((double)loop_count * nmessages);
 
         if(!rank)
-            printf("Transfer size (B): %10li, Transfer Time (s): %15.9f, Bandwidth (GB/s): %15.9f\n", num_B, avg_time_per_transfer, num_GB/avg_time_per_transfer);
+            printf("Message size (B): %10li, Num messages: %10i, Transfer Time (s): %15.9f, Bandwidth (GB/s): %15.9f\n", num_B, nmessages, avg_time_per_transfer, num_GB/avg_time_per_transfer );
 
         // free window
         MPI_Win_free(&window);
+
+        std::cout << std::flush;
     }
 
     /* -------------------------------------------------------------------------------------------

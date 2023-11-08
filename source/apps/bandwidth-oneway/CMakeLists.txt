@@ -1,26 +1,34 @@
 project(bandwidth LANGUAGES CXX)
 
-add_executable(bandwidth-oneway ${_EXCLUDE}
-    ${CMAKE_CURRENT_LIST_DIR}/bandwidth-oneway.cpp)
+file(GLOB CPP_SOURCES "*.cpp")
 
-set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/bandwidth-oneway.cpp PROPERTIES LANGUAGE CXX LINKER_LANGUAGE CXX)
+foreach(source_file ${CPP_SOURCES})
+  # get the file name without an extension
+  get_filename_component(exec_name ${source_file} NAME_WE)
 
-# include core/include and generated files
-target_include_directories(bandwidth-oneway PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../include ${CMAKE_BINARY_DIR}
-                            ${ARGPARSE_INCLUDE_DIR})
+  # add an executable with the same name as the source file
+  add_executable(${exec_name} ${_EXCLUDE} ${source_file})
 
-target_link_libraries(bandwidth-oneway PUBLIC ${MPI_LIBS} cudart tbb)
+  set_source_files_properties(${source_file} PROPERTIES LANGUAGE CXX
+                                                        LINKER_LANGUAGE CXX)
+  target_include_directories(
+    ${exec_name}
+    PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_LIST_DIR}/../../include
+            ${ARGPARSE_INCLUDE_DIR})
 
-set_target_properties(bandwidth-oneway
+  target_link_libraries(${exec_name} PUBLIC ${MPI_LIBS} cudart tbb)
+
+  set_target_properties(
+    ${exec_name}
     PROPERTIES
-        CXX_STANDARD ${CMAKE_CXX_STANDARD}
-        CUDA_ARCHITECTURES 80
-        CUDA_SEPARABLE_COMPILATION ON
-        CUDA_STANDARD 17
-        CUDA_STANDARD_REQUIRED YES
-        CXX_EXTENSIONS NO
-        INSTALL_RPATH_USE_LINK_PATH ON
-)
+    CXX_STANDARD ${CMAKE_CXX_STANDARD}
+    CUDA_ARCHITECTURES 80
+    CUDA_SEPARABLE_COMPILATION ON
+    CUDA_STANDARD 17
+    CUDA_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+    INSTALL_RPATH_USE_LINK_PATH ON)
 
-# installation
-install(TARGETS bandwidth-oneway DESTINATION ${CMAKE_INSTALL_BINDIR})
+  # installation
+  install(TARGETS ${exec_name} DESTINATION ${CMAKE_INSTALL_BINDIR})
+endforeach()
